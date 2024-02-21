@@ -1,0 +1,130 @@
+@startuml
+!define ENTITY(entityName) class entityName << Entity >>
+!define AGGREGATE(aggregateName) class aggregateName << Aggregate >>
+!define AGGREGATE_ROOT(aggregateRootName) class aggregateRootName << Aggregate Root >>
+!define AGGREGATE_ROOT_ENTITY(aggregateRootEntityName) class aggregateRootEntityName << Aggregate Root >> << Entity >>
+!define VALUE_OBJECT(valueObjectName) class valueObjectName << Value Object >>
+!pragma useVerticalIf on
+hide circle
+
+package "Library Management System" as LibrarySystem {
+
+    package "Catalog Sub-Domain" <<Rectangle>>  #3399ff{
+        ENTITY(Book) #lightblue {
+            bookId: Long
+            title: String
+            author: String
+            genre: String
+            publicationYear: Integer
+        }
+
+        ENTITY(Author) #lightblue {
+            authorId: Long
+            firstName: String
+            lastName: String
+            biography: String
+        }
+
+        VALUE_OBJECT(Nationality) #Bisque{
+            city: String
+            province: String
+            country: String
+        }
+
+
+        VALUE_OBJECT(BookIdentifier) #Bisque {
+            isbn: String
+        }
+
+        VALUE_OBJECT(AuthorIdentifier) #Bisque {
+            authorId: UUID
+        }
+
+        AGGREGATE_ROOT(Inventory) #lightblue {
+            inventoryId: Long
+            bookId: BookIdentifier
+            genre: String
+        }
+
+        VALUE_OBJECT(InventoryIdentifier) #Bisque {
+            inventoryId: UUID
+        }
+
+        Inventory --> InventoryIdentifier
+        Author --> Nationality
+        Inventory --> BookIdentifier
+        Book --> BookIdentifier
+        Author --> AuthorIdentifier
+        Book o-- "1" Author
+    }
+
+    package "Membership Sub-Domain" <<Rectangle>> #FFCDD2 {
+        AGGREGATE_ROOT_ENTITY(Member) #lightblue {
+            memberId: Long
+            firstName: String
+            LastName: String
+            email: String
+        }
+
+        VALUE_OBJECT(MemberIdentifier) #Bisque{
+            memberId: UUID
+        }
+
+        VALUE_OBJECT(MembershipType) #Bisque{
+            benefits: String
+            type: String
+        }
+
+        VALUE_OBJECT(Address) #Bisque{
+                street: String
+                city: String
+                province: String
+                country: String
+        }
+
+        Member --> MemberIdentifier
+        Member --> Address
+        Member --> MembershipType
+
+    }
+
+    package "Loan Sub-Domain" <<Rectangle>> #DFBDF4{
+        AGGREGATE_ROOT(Loan) #lightblue {
+            loanId: Long
+            memberId: String
+            bookId: String
+            returned: Boolean
+        }
+
+        VALUE_OBJECT(LoanIdentifier) #Bisque {
+            loanId: UUID
+        }
+        VALUE_OBJECT(LoanPeriod) #Bisque {
+            loanDate: Date
+            dueDate: Date
+        }
+        Loan --> LoanPeriod
+        Loan --> LoanIdentifier
+    }
+
+    package "Review and Rating Sub-Domain" <<Rectangle>> #Violet{
+        ENTITY(Review) #lightblue {
+            reviewId: Long
+            reviewText: String
+            rating: Integer
+            submissionDate: Date
+        }
+
+        VALUE_OBJECT(ReviewIdentifier) #Bisque {
+            reviewId: UUID
+        }
+
+        Review --> ReviewIdentifier
+        Review --> BookIdentifier
+        Review --> MemberIdentifier
+    }
+
+}
+
+
+@enduml
