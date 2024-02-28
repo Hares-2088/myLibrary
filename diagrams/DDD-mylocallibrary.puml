@@ -13,9 +13,10 @@ package "Library Management System" as LibrarySystem {
         ENTITY(Book) #lightblue {
             bookId: Long
             title: String
-            author: String
             genre: String
-            publicationYear: Integer
+            description: String
+            publicationYear: Date
+            availableCopies: Integer
         }
 
         ENTITY(Author) #lightblue {
@@ -40,26 +41,18 @@ package "Library Management System" as LibrarySystem {
             authorId: UUID
         }
 
-        AGGREGATE_ROOT(Inventory) #lightblue {
-            inventoryId: Long
-            bookId: BookIdentifier
-            genre: String
-        }
 
-        VALUE_OBJECT(InventoryIdentifier) #Bisque {
-            inventoryId: UUID
-        }
 
-        Inventory --> InventoryIdentifier
-        Author --> Nationality
-        Inventory --> BookIdentifier
+
+        Book "1"--> "1" AuthorIdentifier
+        Author o-"1" Nationality
         Book --> BookIdentifier
         Author --> AuthorIdentifier
-        Book o-- "1" Author
+        Author "1"--- "0..*" BookIdentifier
     }
 
     package "Membership Sub-Domain" <<Rectangle>> #FFCDD2 {
-        AGGREGATE_ROOT_ENTITY(Member) #lightblue {
+        ENTITY(Member) #lightblue {
             memberId: Long
             firstName: String
             LastName: String
@@ -83,16 +76,14 @@ package "Library Management System" as LibrarySystem {
         }
 
         Member --> MemberIdentifier
-        Member --> Address
-        Member --> MembershipType
+        Member o-- "1..*" Address
+        Member o-- "1" MembershipType
 
     }
 
     package "Loan Sub-Domain" <<Rectangle>> #DFBDF4{
-        AGGREGATE_ROOT(Loan) #lightblue {
+        AGGREGATE_ROOT_ENTITY(Loan) #lightblue {
             loanId: Long
-            memberId: String
-            bookId: String
             returned: Boolean
         }
 
@@ -103,26 +94,51 @@ package "Library Management System" as LibrarySystem {
             loanDate: Date
             dueDate: Date
         }
-        Loan --> LoanPeriod
+        Loan "1" o-- "1" LoanPeriod
         Loan --> LoanIdentifier
+        Loan --> BookIdentifier
+        Loan --> MemberIdentifier
+    }
+    package "Late Fees Sub-Domain" <<Rectangle>> #Yellow{
+
+        ENTITY(LateFee) #lightblue {
+            lateFeeId: Long
+            amount: Double
+            dueDate: Date
+            paid: Boolean
+        }
+        VALUE_OBJECT(LateFeeIdentifier) #Bisque {
+            loanDate: Date
+            dueDate: Date
+        }
+        LateFee --> BookIdentifier
+        LateFee --> MemberIdentifier
+        LateFee --> LateFeeIdentifier
     }
 
-    package "Review and Rating Sub-Domain" <<Rectangle>> #Violet{
-        ENTITY(Review) #lightblue {
-            reviewId: Long
-            reviewText: String
-            rating: Integer
-            submissionDate: Date
+    package "Reservation Sub-Domain" <<Rectangle>> #FFA07A{
+        AGGREGATE_ROOT_ENTITY(Reservation) #lightblue {
+            reservationId: Long
+            reservationDate: Date
+            fulfilled: Boolean
         }
 
-        VALUE_OBJECT(ReviewIdentifier) #Bisque {
-            reviewId: UUID
+        VALUE_OBJECT(ReservationIdentifier) #Bisque {
+            reservationId: UUID
         }
 
-        Review --> ReviewIdentifier
-        Review --> BookIdentifier
-        Review --> MemberIdentifier
+        note right of Reservation #lightblue
+            Constraint: Number of copies available has to be higher than 0
+        end note
+
+        Reservation --> ReservationIdentifier
+        Reservation --> MemberIdentifier
     }
+
+    Reservation --> BookIdentifier
+    Member "1" --> "0..*" ReservationIdentifier
+    Loan --> LateFeeIdentifier
+    Member "1" --> "0..*" BookIdentifier
 
 }
 
