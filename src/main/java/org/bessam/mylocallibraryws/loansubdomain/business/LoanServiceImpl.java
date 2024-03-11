@@ -99,6 +99,13 @@ public class LoanServiceImpl implements LoanService{
 
         Reservation reservation = reservationRepository.findByReservationIdentifier_ReservationId(member.getReservationIdentifier().getReservationId());
 
+        if ( reservation == null) {
+            throw new NotFoundException("The member needs to have a reservation before asking for a loan");
+        }
+        if ( !reservation.getBookIdentifier().getBookId().equals(loanRequestModel.getBookId())) {
+            throw new NotFoundException("The bookId in the reservation does not match the bookId in the loan request");
+        }
+
         Loan loan = loanRequestMapper.requestModelToEntity(loanRequestModel, new LoanIdentifier(), member.getMemberIdentifier(),
                                                             book.getBookIdentifier(), reservation.getReservationIdentifier(),
                                                             new LoanPeriod());
@@ -143,7 +150,7 @@ public class LoanServiceImpl implements LoanService{
         Reservation reservation = reservationRepository.findByReservationIdentifier_ReservationId(loan.getReservationIdentifier().getReservationId());
         Member member = memberRepository.findByMemberIdentifier_MemberId(memberId);
 
-        if ( loan == null) {
+        if ( reservation == null) {
             throw new NotFoundException("Unknown loanId: " + loanId);
         }
         if ( member != null) {

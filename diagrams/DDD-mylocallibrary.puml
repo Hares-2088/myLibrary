@@ -94,6 +94,11 @@ package "Library Management System" as LibrarySystem {
             loanDate: Date
             dueDate: Date
         }
+
+        note right of Loan #lightblue
+            Constraint: The member has to have a reservation for the book
+        end note
+
         Loan "1" o-- "1" LoanPeriod
         Loan --> LoanIdentifier
         Loan --> BookIdentifier
